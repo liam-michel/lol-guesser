@@ -1,11 +1,12 @@
-import React , {useState, useEffect} from 'react';
+import {useState} from 'react';
 
 export default function CallApi(){
     const [message, setMessage] = useState("");
 
     const fetchMessage = async() => {
         try{
-            const response = await fetch("http://localhost:8080/testAPI")
+            const fullURL = `http://localhost:${import.meta.env.VITE_GOLANG_PORT}/api/testAPI`
+            const response = await fetch(fullURL)
             if(!response.ok){
                 throw new Error("HTTP error! status: " + response.status)
             }

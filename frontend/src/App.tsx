@@ -1,14 +1,12 @@
-import './App.css'
-import CallApi from './components/CallApi'
-import RandomChampion from './components/RandomChampion'
+import './App.css';
+import GameLoop from './components/GameLoop';
 
 function App() {
   return (
     <>
-      <CallApi />
-      <RandomChampion />  
+      <GameLoop />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

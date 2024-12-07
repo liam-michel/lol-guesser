@@ -44,6 +44,7 @@ func testAPIfunction(w http.ResponseWriter, r *http.Request) {
 func getRandomChampion(w http.ResponseWriter, r *http.Request) {
 	//read in the json names
 	name, url, err := PickRandomChampion()
+
 	fullURL := fmt.Sprintf("http://localhost:%s/static/images/%s", os.Getenv("VITE_GOLANG_PORT"), url)
 	if err != nil {
 		http.Error(w, "Error picking random champion", http.StatusInternalServerError)

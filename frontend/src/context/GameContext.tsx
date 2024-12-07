@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { fetchRandomChampion } from '../utils/api';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { fetchRandomChampion } from "../utils/api";
 
 interface Champion {
     name: string;
@@ -9,12 +9,13 @@ interface Champion {
 interface GameContextType {
     score: number;
     setScore: React.Dispatch<React.SetStateAction<number>>;
-    champion: any;
-    setChampion: React.Dispatch<React.SetStateAction<any>>;
+    champion: Champion | null;
+    setChampion: React.Dispatch<React.SetStateAction<Champion | null>>;
     timeLeft: number;
-    setTimeLeft: React.Dispatch<React.SetStateAction<number>>;
+    startTimer: () => void;
+    stopTimer: () => void;
+    resetTimer: () => void;
     timerRunning: boolean;
-    setTimerRunning: React.Dispatch<React.SetStateAction<boolean>>;
     allottedTime: number;
 }
 
@@ -28,30 +29,37 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const [timerRunning, setTimerRunning] = useState(false);
 
     useEffect(() => {
-        if (!timerRunning || timeLeft <= 0) {
-            if (timeLeft <= 0) {
-                setTimerRunning(false);
-                setTimeLeft(allottedTime);
-            }
-            return;
+        let timerId: NodeJS.Timeout | null = null;
+
+        if (timerRunning && timeLeft > 0) {
+            timerId = setInterval(() => {
+                setTimeLeft((prevTime) => prevTime - 1);
+            }, 1000);
+        } else if (timeLeft <= 0) {
+            setTimerRunning(false);
+            setTimeLeft(allottedTime); // Reset the timer
         }
 
-        const timerId = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
-        }, 1000);
+        return () => {
+            if (timerId) clearInterval(timerId);
+        };
+    }, [timerRunning, timeLeft, allottedTime]);
 
-        return () => clearInterval(timerId);
-    }, [timerRunning, timeLeft]);
-    
     useEffect(() => {
         const initializeChampion = async () => {
-            const {name, imageURL} = await fetchRandomChampion();
-            setChampion({name: name, imageURL: imageURL});
+            const { name, imageURL } = await fetchRandomChampion();
+            setChampion({ name, imageURL });
         };
-    
+
         initializeChampion();
     }, []);
-    
+
+    const startTimer = () => setTimerRunning(true);
+    const stopTimer = () => setTimerRunning(false);
+    const resetTimer = () => {
+        setTimerRunning(false);
+        setTimeLeft(allottedTime);
+    };
 
     const value = {
         score,
@@ -59,9 +67,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         champion,
         setChampion,
         timeLeft,
-        setTimeLeft,
+        startTimer,
+        stopTimer,
+        resetTimer,
         timerRunning,
-        setTimerRunning,
         allottedTime,
     };
 
@@ -71,7 +80,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 export const useGame = () => {
     const context = useContext(GameContext);
     if (!context) {
-        throw new Error('useGame must be used within a GameProvider');
+        throw new Error("useGame must be used within a GameProvider");
     }
     return context;
 };

@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
-	"os"
-
 	"math/rand/v2"
+	"os"
 )
 
 //one function to read in the json file
@@ -63,13 +63,20 @@ func PickRandomChampion() (name string, url string, err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//generate a random number
-	randomIndex := generateRandomNumber(int64(len(champion_names)))
-	//pick out the champion name and image url
-	name, image_url, err := PickChampByName(champion_names[randomIndex], &championsData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return name, image_url, nil
 
+	// Keep trying until we find a champion with an existing image
+	for {
+		randomIndex := generateRandomNumber(int64(len(champion_names)))
+		name, image_url, err := PickChampByName(champion_names[randomIndex], &championsData)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("Image URL: ", image_url)
+		if _, err := os.Stat("./../static/images/" + image_url); err == nil {
+			fmt.Println("Image exists")
+			return name, image_url, nil
+		}
+		fmt.Println("Image does not exist, trying another champion...")
+	}
 }

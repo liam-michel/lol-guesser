@@ -7,8 +7,6 @@ interface Champion {
 }
 
 interface GameContextType {
-    score: number;
-    setScore: React.Dispatch<React.SetStateAction<number>>;
     champion: Champion | null;
     setChampion: React.Dispatch<React.SetStateAction<Champion | null>>;
     timeLeft: number;
@@ -17,16 +15,27 @@ interface GameContextType {
     resetTimer: () => void;
     timerRunning: boolean;
     allottedTime: number;
+    inputValue: string;
+    setInputValue: React.Dispatch<React.SetStateAction<string>>;
+    correctGuesses: number;
+    setCorrectGuesses: React.Dispatch<React.SetStateAction<number>>;
+    incorrectGuesses: number;
+    setIncorrectGuesses: React.Dispatch<React.SetStateAction<number>>;
+    accuracy: number;
+    setAccuracy: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const GameContext = createContext<GameContextType>({} as GameContextType);
 
 export const GameProvider = ({ children }: { children: ReactNode }) => {
-    const allottedTime = 30;
-    const [score, setScore] = useState(0);
+    const allottedTime = 20;
     const [champion, setChampion] = useState<Champion | null>(null);
     const [timeLeft, setTimeLeft] = useState(allottedTime);
     const [timerRunning, setTimerRunning] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const [correctGuesses, setCorrectGuesses] = useState(0);
+    const [incorrectGuesses, setIncorrectGuesses] = useState(0);    
+    const [accuracy, setAccuracy] = useState(0);
 
     useEffect(() => {
         let timerId: NodeJS.Timeout | null = null;
@@ -62,8 +71,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const value = {
-        score,
-        setScore,
+
         champion,
         setChampion,
         timeLeft,
@@ -71,7 +79,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         stopTimer,
         resetTimer,
         timerRunning,
+        inputValue,
+        setInputValue,
         allottedTime,
+        correctGuesses,
+        setCorrectGuesses,
+        incorrectGuesses,
+        setIncorrectGuesses,
+        accuracy,   
+        setAccuracy,
+
     };
 
     return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

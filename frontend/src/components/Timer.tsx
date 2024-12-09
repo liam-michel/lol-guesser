@@ -6,7 +6,7 @@ export default function Timer() {
 
     return (
         <div>
-            <h1>Timer: {timeLeft}</h1>
+            <h1>Timer: {timeLeft} seconds</h1>
             <button onClick={startTimer}>Start</button>
             <button onClick={stopTimer}>Stop</button>
             <button onClick={resetTimer}>Reset</button>

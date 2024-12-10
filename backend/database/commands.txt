@@ -1,0 +1,7 @@
+migrate -path ./migrations -database "mysql://root:$MYSQLPASSWORD@tcp(127.0.0.1:3306)/lol_users" up
+
+migrate -path ./migrations -database "mysql://root:$MYSQLPASSWORD@tcp(127.0.0.1:3306)/lol_users" down
+
+migrate -path ./migrations -database "mysql://root:$MYSQLPASSWORD@tcp(127.0.0.1:3306)/lol_users" version
+
+migrate -path ./migrations -database "mysql://root:$MYSQLPASSWORD@tcp(127.0.0.1:3306)/lol_users" force x 

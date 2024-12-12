@@ -1,20 +1,17 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
 	"lol-guesser/database"
 	"lol-guesser/lol_data"
+	"net/http"
+	"os"
 
 	//"io/ioutil"
 	//"math/rand"
 	//"time"
 	"github.com/joho/godotenv"
-
-
 )
 
 type Response struct {
@@ -59,18 +56,13 @@ func enableCors(next http.Handler) http.Handler {
 // 	json.NewEncoder(w).Encode(response)
 // }
 
-
 func setupRoutes(mux *http.ServeMux) {
 	// Serve static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 	mux.HandleFunc("/api/randomchampion", lol_data.GetRandomChampionHandler)
-	mux.HandleFunc("/api/getuser" ,database.GetUserHandler)
-	mux.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request){
-		fmt.Println("Hit tester")
-		w.Header().Set("Content-Type", "application/json")
-		response := Response{Message: "Test success"}
-		json.NewEncoder(w).Encode(response)
-	})
+	mux.HandleFunc("/api/getuser", database.GetUserHandler)
+	mux.HandleFunc("/api/createuser", database.CreateUserHandler)
+	mux.HandleFunc("/api/login", database.LoginHandler)
 }
 
 func main() {
@@ -78,8 +70,9 @@ func main() {
 	//load env variables
 	err := godotenv.Load("../.env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file in main.go")
 	}
+	database.InitDB()
 	FULLPORT := ":" + os.Getenv("VITE_GOLANG_PORT")
 	// Create a new router (mux)
 	mux := http.NewServeMux()

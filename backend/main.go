@@ -6,11 +6,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"lol-guesser/database"
+	"lol-guesser/lol_data"
 
 	//"io/ioutil"
 	//"math/rand"
 	//"time"
 	"github.com/joho/godotenv"
+
+
 )
 
 type Response struct {
@@ -34,33 +38,39 @@ func enableCors(next http.Handler) http.Handler {
 	})
 }
 
-func testAPIfunction(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Test API function hit")
-	w.Header().Set("Content-Type", "application/json")
-	response := Response{Message: "Hello World from GO"}
-	json.NewEncoder(w).Encode(response)
-}
+// func createUserHandler(w http.ResponseWriter, r *http.Request) {
+// 	// Parse the request body
+// 	decoder := json.NewDecoder(r.Body)
+// 	var user database.User
+// 	err := decoder.Decode(&user)
+// 	if err != nil {
+// 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+// 		return
+// 	}
+// 	// Add the user to the database
+// 	err = database.AddUser(user)
+// 	if err != nil {
+// 		http.Error(w, "Error adding user to the database", http.StatusInternalServerError)
+// 		return
+// 	}
+// 	// Return a success message
+// 	response := Response{Message: "User added successfully"}
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(response)
+// }
 
-func getRandomChampion(w http.ResponseWriter, r *http.Request) {
-	//read in the json names
-	name, url, err := PickRandomChampion()
 
-	fullURL := fmt.Sprintf("http://localhost:%s/static/images/%s", os.Getenv("VITE_GOLANG_PORT"), url)
-	if err != nil {
-		http.Error(w, "Error picking random champion", http.StatusInternalServerError)
-		return
-	}
-	fmt.Println("Name: ", name)
-	fmt.Println("URL: ", fullURL)
-	w.Header().Set("Content-Type", "application/json")
-	response := ChampionResponse{Name: name, URL: fullURL}
-	json.NewEncoder(w).Encode(response)
-}
 func setupRoutes(mux *http.ServeMux) {
 	// Serve static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
-	mux.HandleFunc("/api/testAPI", testAPIfunction)
-	mux.HandleFunc("/api/randomchampion", getRandomChampion)
+	mux.HandleFunc("/api/randomchampion", lol_data.GetRandomChampionHandler)
+	mux.HandleFunc("/api/getuser" ,database.GetUserHandler)
+	mux.HandleFunc("/api/test", func(w http.ResponseWriter, r *http.Request){
+		fmt.Println("Hit tester")
+		w.Header().Set("Content-Type", "application/json")
+		response := Response{Message: "Test success"}
+		json.NewEncoder(w).Encode(response)
+	})
 }
 
 func main() {
@@ -73,7 +83,6 @@ func main() {
 	FULLPORT := ":" + os.Getenv("VITE_GOLANG_PORT")
 	// Create a new router (mux)
 	mux := http.NewServeMux()
-	ReadChampionsJSON()
 
 	// Set up routes
 	setupRoutes(mux)

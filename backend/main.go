@@ -1,10 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
-	"lol-guesser/database"
 	"lol-guesser/lol_data"
+	"lol-guesser/user_database"
 	"net/http"
 	"os"
 
@@ -35,34 +36,38 @@ func enableCors(next http.Handler) http.Handler {
 	})
 }
 
-// func createUserHandler(w http.ResponseWriter, r *http.Request) {
-// 	// Parse the request body
-// 	decoder := json.NewDecoder(r.Body)
-// 	var user database.User
-// 	err := decoder.Decode(&user)
-// 	if err != nil {
-// 		http.Error(w, "Invalid request body", http.StatusBadRequest)
-// 		return
-// 	}
-// 	// Add the user to the database
-// 	err = database.AddUser(user)
-// 	if err != nil {
-// 		http.Error(w, "Error adding user to the database", http.StatusInternalServerError)
-// 		return
-// 	}
-// 	// Return a success message
-// 	response := Response{Message: "User added successfully"}
-// 	w.Header().Set("Content-Type", "application/json")
-// 	json.NewEncoder(w).Encode(response)
-// }
+// Global DB variable
+
+func InitDB() (*sql.DB, error) {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		return nil, fmt.Errorf("error loading .env file: %v", err)
+	}
+
+	dbPassword := os.Getenv("MYSQLPASSWORD")
+	dbName := "lol_users"
+	dsn := fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/%s", dbPassword, dbName)
+
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("error connecting to the database: %v", err)
+	}
+
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("error pinging the database: %v", err)
+	}
+
+	fmt.Println("Successfully connected to the database!")
+	return db, nil
+}
 
 func setupRoutes(mux *http.ServeMux) {
 	// Serve static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 	mux.HandleFunc("/api/randomchampion", lol_data.GetRandomChampionHandler)
-	mux.HandleFunc("/api/getuser", database.GetUserHandler)
-	mux.HandleFunc("/api/createuser", database.CreateUserHandler)
-	mux.HandleFunc("/api/login", database.LoginHandler)
+	mux.HandleFunc("/api/getuser", user_database.GetUserHandler)
+	mux.HandleFunc("/api/createuser", user_database.CreateUserHandler)
+	mux.HandleFunc("/api/login", user_database.LoginHandler)
 }
 
 func main() {
@@ -72,7 +77,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file in main.go")
 	}
-	database.InitDB()
+	db, err := InitDB()
+	if err != nil {
+		log.Fatalf("Error initializing the database: %v", err)
+	}
+	defer db.Close()
+	user_database.SetDB(db)
 	FULLPORT := ":" + os.Getenv("VITE_GOLANG_PORT")
 	// Create a new router (mux)
 	mux := http.NewServeMux()

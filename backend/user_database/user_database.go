@@ -1,4 +1,4 @@
-package database
+package user_database
 
 import (
 	"database/sql"
@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -39,34 +37,10 @@ func jsonErrorResponse(w http.ResponseWriter, message string, statusCode int) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// Global DB variable
 var db *sql.DB
 
-// Function to initialize the DB connection
-func InitDB() {
-	var err error
-	err = godotenv.Load("../.env")
-	if err != nil {
-		log.Fatal("Error loading .env file in database.go")
-	}
-
-	// Get database credentials from environment variables or hardcode for now
-	dbPassword := os.Getenv("MYSQLPASSWORD") // Replace with your real password or use os.Getenv for environment variable
-	dbName := "lol_users"                    // Replace with your database name
-
-	// DSN: Data Source Name (replace placeholders with your actual DB credentials)
-	dsn := fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/%s", dbPassword, dbName)
-	db, err = sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatal("Error connecting to the database:", err)
-	}
-
-	// Ping to make sure the connection is valid
-	if err := db.Ping(); err != nil {
-		log.Fatal("Error pinging the database:", err)
-	}
-
-	fmt.Println("Successfully connected to the database!")
+func SetDB(database *sql.DB) {
+	db = database
 }
 
 func CreateUser(username string, password string) error {

@@ -67,6 +67,7 @@ func CreateUser(username string, password string) error {
 	//start with hashing the password with bcrypt
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
+
 		return fmt.Errorf("error hashing password: %v", err)
 	}
 	//print the hashed password
@@ -137,31 +138,6 @@ func GetUserDetails(username string) (UserDetails, error) {
 	return user, nil
 }
 
-func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Hit create user handler")
-	var createUserRequest CreateUserRequest
-	err := json.NewDecoder(r.Body).Decode(&createUserRequest)
-	if err != nil {
-		jsonErrorResponse(w, "Invalid request body, please include username and password", http.StatusBadRequest)
-		return
-	}
-	username, password := createUserRequest.Username, createUserRequest.Password
-
-	err = CreateUser(username, password)
-	if err != nil {
-		if err.Error() == "user already exists in the database" {
-			jsonErrorResponse(w, "Username is already taken", http.StatusConflict)
-		} else {
-			log.Printf("Error adding user to the database: %v", err)
-			jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
-		}
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	response := UserResponse{Username: username, Success: true}
-	json.NewEncoder(w).Encode(response)
-}
-
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Hit get user handler")
 	var userRequest UserRequest
@@ -183,6 +159,43 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	response := UserResponse{Username: user, Success: true}
+	json.NewEncoder(w).Encode(response)
+}
+
+func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Hit create user handler")
+	var createUserRequest CreateUserRequest
+	err := json.NewDecoder(r.Body).Decode(&createUserRequest)
+	if err != nil {
+		jsonErrorResponse(w, "Invalid request body, please include username and password", http.StatusBadRequest)
+		return
+	}
+	username, password := createUserRequest.Username, createUserRequest.Password
+
+	err = CreateUser(username, password)
+	if err != nil {
+		if err.Error() == "user already exists in the database" {
+			jsonErrorResponse(w, "Username is already taken", http.StatusConflict)
+		} else {
+			log.Printf("Error adding user to the database: %v", err)
+			jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+		}
+		return
+	}
+	//generate a jwt token (once we create the user, we want to log them in)
+	token, err := handlejwt.GenerateToken(username)
+	if err != nil {
+		log.Printf("Error generating token: %v", err)
+		jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	//return the response with the token included
+	response := JwtResponse{
+		Username: username,
+		Token:    token,
+		Success:  "true",
+	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 

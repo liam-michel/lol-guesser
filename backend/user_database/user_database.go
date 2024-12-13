@@ -2,9 +2,13 @@ package user_database
 
 import (
 	"database/sql"
+	"lol-guesser/handlejwt"
+
 	"encoding/json"
 	"fmt"
 	"log"
+
+	// "lol-guesser/handlejwt"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -28,6 +32,12 @@ type UserResponse struct {
 type CreateUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type JwtResponse struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+	Success  string `json:"success"`
 }
 
 func jsonErrorResponse(w http.ResponseWriter, message string, statusCode int) {
@@ -201,7 +211,20 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		jsonErrorResponse(w, "Invalid username or password", http.StatusUnauthorized)
 		return
 	}
+	//generate a jwt token
+	token, err := handlejwt.GenerateToken(storedUser.Username)
+	if err != nil {
+		log.Printf("Error generating token: %v", err)
+		jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	//return the response with the token included
+	response := JwtResponse{
+		Username: storedUser.Username,
+		Token:    token,
+		Success:  "true",
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	response := UserResponse{Username: username, Success: true}
 	json.NewEncoder(w).Encode(response)
 }

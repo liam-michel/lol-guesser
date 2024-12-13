@@ -81,8 +81,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing the database: %v", err)
 	}
-	defer db.Close()
 	user_database.SetDB(db)
+	defer db.Close()
 	FULLPORT := ":" + os.Getenv("VITE_GOLANG_PORT")
 	// Create a new router (mux)
 	mux := http.NewServeMux()

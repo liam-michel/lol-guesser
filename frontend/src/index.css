@@ -96,3 +96,42 @@ button:focus-visible {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+/* Position the login component in the top-left corner */
+.login-container {
+  position: absolute;
+  top: 10px; /* Add spacing from the top of the screen */
+  left: 10px; /* Add spacing from the left of the screen */
+  z-index: 10;
+  padding: 10px;
+}
+
+/* Ensure form elements inside the Login are stacked vertically */
+.login-container form {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  gap: 10px; /* Adds space between inputs and buttons */
+}
+
+/* Style inputs and buttons to make them appropriately sized */
+.login-container input,
+.login-container button {
+  font-size: 16px; /* A reasonable text size */
+  padding: 8px; /* Adequate padding for better usability */
+  border-radius: 5px; /* Slightly rounded corners */
+  width: 200px; /* Set a fixed width */
+  box-sizing: border-box; /* Ensures padding doesn't affect the width */
+  margin: 0 auto; /* Center the inputs/buttons horizontally */
+}
+
+/* Style the button */
+.login-container button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* Hover effect for the button */
+.login-container button:hover {
+  background-color: #0056b3;
+}

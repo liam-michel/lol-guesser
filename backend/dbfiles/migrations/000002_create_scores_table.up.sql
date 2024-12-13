@@ -1,1 +1,10 @@
-DROP TABLE IF EXISTS scores;
+CREATE TABLE scores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    correct_guesses INT NOT NULL,
+    incorrect_guesses INT NOT NULL,
+    accuracy DECIMAL(5, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (username) REFERENCES users(username)
+);

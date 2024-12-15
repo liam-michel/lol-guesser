@@ -19,8 +19,9 @@ type Claims struct {
 }
 
 var (
-	jwtSecret   = []byte(os.Getenv("JWT_SECRET"))
-	jwtLifeSpan = time.Hour * 24
+	jwtSecret       = []byte(os.Getenv("JWT_SECRET"))
+	jwtLifeSpan     = time.Hour * 24
+	refreshLifeSpan = time.Hour * 24 * 7
 )
 
 // func init() {
@@ -71,6 +72,19 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func GenerateRefreshToken(username string) (string, error) {
+	claims := &Claims{
+		Username: username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(refreshLifeSpan)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+
 }
 
 func GenerateToken(username string) (string, error) {

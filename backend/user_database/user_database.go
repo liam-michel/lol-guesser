@@ -35,9 +35,10 @@ type CreateUserRequest struct {
 }
 
 type JwtResponse struct {
-	Username string `json:"username"`
-	Token    string `json:"token"`
-	Success  string `json:"success"`
+	Username     string `json:"username"`
+	AuthToken    string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
+	Success      string `json:"success"`
 }
 
 func jsonErrorResponse(w http.ResponseWriter, message string, statusCode int) {
@@ -73,8 +74,14 @@ func CreateUser(username string, password string) error {
 	//print the hashed password
 	fmt.Println("Hashed password: ", string(hash))
 
+	//generate the first refresh token for the new user 
+	refreshToken, err := handlejwt.GenerateRefreshToken(username)
+	if err != nil {
+		return fmt.Errorf("error generating refresh token: %v", err)
+	}
+
 	//insert the user into the database
-	_, err = db.Exec("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, hash)
+	_, err = db.Exec("INSERT INTO users (username, password_hash, refresh_token) VALUES (?, ?, ?)", username, hash, refresh_token)
 	if err != nil {
 		return fmt.Errorf("error inserting user into database: %v", err)
 	}
@@ -189,15 +196,24 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	refreshtoken, err := handlejwt.GenerateRefreshToken(username)
+	if err != nil {
+		log.Printf("Error generating the refresh token %v", err)
+		jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+	}
+
 	//return the response with the token included
 	response := JwtResponse{
-		Username: username,
-		Token:    token,
-		Success:  "true",
+		Username:     username,
+		AuthToken:    token,
+		RefreshToken: refreshtoken,
+		Success:      "true",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func RefreshTokenHandler(w http.)
 
 // handler for logging in
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -231,10 +247,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	refreshtoken, err := handlejwt.GenerateRefreshToken(username)
+	if err != nil {
+		log.Printf("Error generating the refresh token %v", err)
+		jsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+	}
 	//return the response with the token included
 	response := JwtResponse{
 		Username: storedUser.Username,
-		Token:    token,
+		AuthToken:    token,
+		RefreshToken: refreshtoken,
 		Success:  "true",
 	}
 

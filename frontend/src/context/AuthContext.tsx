@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { loginUser, createUser } from "../utils/api";
+import { loginUser, createUser } from "../utils/user_api";
 
 interface AuthenticationType {
   username: string | null;

@@ -1,4 +1,3 @@
-import { table } from "console";
 
 // src/utils/api.ts
 const port = import.meta.env.VITE_GOLANG_PORT;

@@ -13,6 +13,6 @@ dotenv.config({path: path.resolve(__dirname, '../.env')})
 export default defineConfig({
   plugins: [react()],
   server:{
-    port: parseInt(process.env.REACT_PORT || '3000')
+    port: parseInt(process.env.VITE_REACT_PORT || '3000')
   }
 })

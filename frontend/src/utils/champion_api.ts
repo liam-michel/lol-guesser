@@ -1,10 +1,10 @@
-// src/utils/api.ts
+const port = import.meta.env.VITE_GOLANG_PORT;
+import { customFetch } from "./customFetch";
 export async function fetchRandomChampion() {
   try {
-      const port = import.meta.env.VITE_GOLANG_PORT;
       const fullURL = `http://localhost:${port}/api/randomchampion`;
 
-      const response = await fetch(fullURL);
+      const response = await customFetch(fullURL);
       if (!response.ok) {
           throw new Error("HTTP error when fetching new random champion! Status: " + response.status);
       }

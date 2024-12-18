@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { useGame } from "../context/GameContext";
-import { fetchRandomChampion } from "../utils/api";
+import { fetchRandomChampion } from "../utils/user_api";
 export default function UserInput() {
     const { champion, setChampion, timerRunning, startTimer, inputValue, setInputValue, correctGuesses, setCorrectGuesses, incorrectGuesses, setIncorrectGuesses, accuracy, setAccuracy } = useGame();
 

@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"lol-guesser/auth"
 	"lol-guesser/lol_data"
-	"lol-guesser/user_database"
 	"net/http"
 	"os"
 
@@ -26,10 +26,14 @@ type ChampionResponse struct {
 
 func enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Allow all origins
+		// Replace * with your frontend origin
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:2020") // Allow all origins
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Credentials", "true") // Add this
+
 		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -65,9 +69,9 @@ func setupRoutes(mux *http.ServeMux) {
 	// Serve static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 	mux.HandleFunc("/api/randomchampion", lol_data.GetRandomChampionHandler)
-	mux.HandleFunc("/api/getuser", user_database.GetUserHandler)
-	mux.HandleFunc("/api/createuser", user_database.CreateUserHandler)
-	mux.HandleFunc("/api/login", user_database.LoginHandler)
+	// mux.HandleFunc("/api/getuser", auth.GetUserHandler)
+	mux.HandleFunc("/api/createuser", auth.CreateUserHandler)
+	mux.HandleFunc("/api/login", auth.LoginHandler)
 }
 
 func main() {
@@ -81,7 +85,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing the database: %v", err)
 	}
-	user_database.SetDB(db)
+	auth.SetDB(db)
 	defer db.Close()
 	FULLPORT := ":" + os.Getenv("VITE_GOLANG_PORT")
 	// Create a new router (mux)

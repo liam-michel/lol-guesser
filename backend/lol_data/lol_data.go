@@ -1,21 +1,19 @@
 package lol_data
 
 import (
-	"net/http"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand/v2"
+	"net/http"
 	"os"
 	//"net/http"
-
 )
 
 type ChampionResponse struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 }
-
 
 //one function to read in the json file
 //one to generate the random index
@@ -81,12 +79,12 @@ func PickRandomChampion() (name string, url string, err error) {
 			log.Fatal(err)
 		}
 
-		fmt.Println("Image URL: ", image_url)
+		//fmt.Println("Image URL: ", image_url)
 		if _, err := os.Stat("./../static/images/" + image_url); err == nil {
-			fmt.Println("Image exists")
+			//fmt.Println("Image exists")
 			return name, image_url, nil
 		}
-		fmt.Println("Image does not exist, trying another champion...")
+		//fmt.Println("Image does not exist, trying another champion...")
 	}
 }
 func GetRandomChampionHandler(w http.ResponseWriter, r *http.Request) {
@@ -98,10 +96,9 @@ func GetRandomChampionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error picking random champion", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Name: ", name)
-	fmt.Println("URL: ", fullURL)
+	//fmt.Println("Name: ", name)
+	//fmt.Println("URL: ", fullURL)
 	w.Header().Set("Content-Type", "application/json")
 	response := ChampionResponse{Name: name, URL: fullURL}
 	json.NewEncoder(w).Encode(response)
 }
-

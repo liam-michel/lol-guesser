@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { fetchRandomChampion } from "../utils/api";
+import { fetchRandomChampion } from "../utils/champion_api";
 
 interface Champion {
     name: string;

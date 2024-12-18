@@ -17,30 +17,6 @@ func JsonErrorResponse(w http.ResponseWriter, message string, statusCode int) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func GetUserHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Hit get user handler")
-	var userRequest common.UserRequest
-	err := json.NewDecoder(r.Body).Decode(&userRequest)
-	if err != nil {
-		JsonErrorResponse(w, "Invalid request body, please include username", http.StatusBadRequest)
-		return
-	}
-	receivedUsername := userRequest.Username
-	user, err := GetUserName(receivedUsername)
-	if err != nil {
-		if err.Error() == "user not found" {
-			JsonErrorResponse(w, "User not found", http.StatusNotFound)
-		} else {
-			log.Printf("Error getting user from database: %v", err)
-			JsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
-		}
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	response := common.UserResponse{Username: user, Success: true}
-	json.NewEncoder(w).Encode(response)
-}
-
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Hit create user handler")
 	var createUserRequest common.CreateUserRequest
@@ -118,6 +94,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		JsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	//replace the refresh token if its expired
 	refreshtoken, err := GenerateRefreshToken(username)
 	if err != nil {
 		log.Printf("Error generating the refresh token %v", err)
@@ -136,36 +113,36 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
-	//generate a new token
-	//get the username from the request
-	var user common.Username
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		JsonErrorResponse(w, "Invalid request body, please include username", http.StatusBadRequest)
-		return
-	}
-	username := user.Username
-	//check if the user is valid
-	exists, err := checkUserExists(username)
-	if err != nil {
-		log.Printf("Error checking if user exists: %v", err)
-		JsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if !exists {
-		JsonErrorResponse(w, "User does not exist", http.StatusNotFound)
-		return
-	}
+// func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
+// 	//generate a new token
+// 	//get the username from the request
+// 	var user common.Username
+// 	err := json.NewDecoder(r.Body).Decode(&user)
+// 	if err != nil {
+// 		JsonErrorResponse(w, "Invalid request body, please include username", http.StatusBadRequest)
+// 		return
+// 	}
+// 	username := user.Username
+// 	//check if the user is valid
+// 	exists, err := checkUserExists(username)
+// 	if err != nil {
+// 		log.Printf("Error checking if user exists: %v", err)
+// 		JsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+// 		return
+// 	}
+// 	if !exists {
+// 		JsonErrorResponse(w, "User does not exist", http.StatusNotFound)
+// 		return
+// 	}
 
-	newRefreshToken, err := GenerateRefreshToken(username)
-	if err != nil {
-		log.Printf("Error generating refresh token: %v", err)
-		JsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	updateRefreshToken(username, newRefreshToken)
-	addRefreshTokentoResponse(w, newRefreshToken)
-	//send an empty response, as new refresh token is returned in cookies
-	w.WriteHeader(http.StatusOK)
-}
+// 	newRefreshToken, err := GenerateRefreshToken(username)
+// 	if err != nil {
+// 		log.Printf("Error generating refresh token: %v", err)
+// 		JsonErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+// 		return
+// 	}
+// 	updateRefreshToken(username, newRefreshToken)
+// 	addRefreshTokentoResponse(w, newRefreshToken)
+// 	//send an empty response, as new refresh token is returned in cookies
+// 	w.WriteHeader(http.StatusOK)
+// }

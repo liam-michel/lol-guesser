@@ -1,3 +1,4 @@
+import { customFetch } from './customFetch';
 
 // src/utils/api.ts
 const port = import.meta.env.VITE_GOLANG_PORT;
@@ -6,7 +7,7 @@ export async function fetchRandomChampion() {
   try {
       const fullURL = `http://localhost:${port}/api/randomchampion`;
 
-      const response = await fetch(fullURL);
+      const response = await customFetch(fullURL);
       if (!response.ok) {
           throw new Error("HTTP error when fetching new random champion! Status: " + response.status);
       }
@@ -23,7 +24,8 @@ export async function createUser(username: string, password: string) {
     try {
       const fullURL = `http://localhost:${port}/api/createuser`;
   
-      const response = await fetch(fullURL, {
+      const response = await customFetch(fullURL, {
+        credentials: 'include',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +51,8 @@ export async function loginUser(username: string, password: string){
     try{
         const fullURL = `http://localhost:${port}/api/login`;
 
-        const response = await fetch(fullURL, {
+        const response = await customFetch(fullURL, {
+            credentials: 'include',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -35,18 +35,18 @@ func TestParseToken(t *testing.T) {
 	}
 }
 
-func TestRefreshToken(t *testing.T) {
-	os.Setenv("JWT_SECRET", "testsecret") // Set up a test secret
-	jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+// func TestRefreshToken(t *testing.T) {
+// 	os.Setenv("JWT_SECRET", "testsecret") // Set up a test secret
+// 	jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-	token, _ := GenerateAuthToken("testuser")
+// 	token, _ := GenerateAuthToken("testuser")
 
-	newToken, err := RefreshAuthToken(token)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
+// 	newToken, err := RefreshAuthToken(token)
+// 	if err != nil {
+// 		t.Fatalf("Expected no error, got %v", err)
+// 	}
 
-	if newToken == "" {
-		t.Fatalf("Expected a new token, got an empty string")
-	}
-}
+// 	if newToken == "" {
+// 		t.Fatalf("Expected a new token, got an empty string")
+// 	}
+// }

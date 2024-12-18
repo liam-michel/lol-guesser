@@ -1,7 +1,8 @@
-package handlejwt
+package auth
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -24,16 +25,21 @@ var (
 	refreshLifeSpan = time.Hour * 24 * 7
 )
 
-// func init() {
-// 	err := godotenv.Load("../.env")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	//load the jwt secret from env variables
-// }
+func isAuthTokenValid(claims *Claims) (bool, error) {
+	if claims == nil {
+		return false, fmt.Errorf("claims cannot be nil")
+	}
 
-func isTokenExpired(err error) bool {
-	return strings.Contains(err.Error(), "expired")
+	// Check expiration
+	if claims.ExpiresAt.Before(time.Now()) {
+		return false, nil // token is expired
+	}
+
+	return true, nil // claims are valid and not expired
+}
+
+func isRefreshTokenValid(claims *Claims, username string) {
+
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -51,10 +57,18 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 		tokenString := parts[1]
 
-		_, err := ParseToken(tokenString)
+		token, err := ParseToken(tokenString)
 		if err != nil {
-			if isTokenExpired(err) {
-				newToken, refreshErr := RefreshToken(tokenString)
+			valid, _ := isAuthTokenValid(token)
+			if !valid {
+				//check for the refresh token
+				refreshToken, err := r.Cookie("refresh_token")
+				if err != nil {
+					http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+					return
+				}
+				//check if the refresh token is valid
+				newToken, refreshErr := RefreshAuthToken(tokenString)
 				if refreshErr != nil {
 					http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
 					return
@@ -87,7 +101,20 @@ func GenerateRefreshToken(username string) (string, error) {
 
 }
 
-func GenerateToken(username string) (string, error) {
+func addRefreshTokentoResponse(w http.ResponseWriter, token string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    token,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+		MaxAge:   7 * 24 * 60 * 60,
+	})
+
+}
+
+func GenerateAuthToken(username string) (string, error) {
 	//define claims
 	claims := &Claims{
 		Username: username,
@@ -105,14 +132,14 @@ func GenerateToken(username string) (string, error) {
 	return signedToken, nil
 }
 
-func RefreshToken(tokenString string) (string, error) {
+func RefreshAuthToken(tokenString string) (string, error) {
 	//parse the passed in token
 	claims, err := ParseToken(tokenString)
 	if err != nil {
 		return "", err
 	}
 	//refresh the token by generating a new one
-	newToken, err := GenerateToken(claims.Username)
+	newToken, err := GenerateAuthToken(claims.Username)
 	if err != nil {
 		return "", err
 	}

@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"lol-guesser/auth"
 	"lol-guesser/lol_data"
-	"lol-guesser/user_database"
 	"net/http"
 	"os"
 
@@ -65,9 +65,10 @@ func setupRoutes(mux *http.ServeMux) {
 	// Serve static files
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../static"))))
 	mux.HandleFunc("/api/randomchampion", lol_data.GetRandomChampionHandler)
-	mux.HandleFunc("/api/getuser", user_database.GetUserHandler)
-	mux.HandleFunc("/api/createuser", user_database.CreateUserHandler)
-	mux.HandleFunc("/api/login", user_database.LoginHandler)
+	mux.HandleFunc("/api/getuser", auth.GetUserHandler)
+	mux.HandleFunc("/api/createuser", auth.CreateUserHandler)
+	mux.HandleFunc("/api/login", auth.LoginHandler)
+	mux.HandleFunc("/api/refresh", auth.RefreshTokenHandler)
 }
 
 func main() {
@@ -81,7 +82,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing the database: %v", err)
 	}
-	user_database.SetDB(db)
+	auth.SetDB(db)
 	defer db.Close()
 	FULLPORT := ":" + os.Getenv("VITE_GOLANG_PORT")
 	// Create a new router (mux)

@@ -1,4 +1,4 @@
-package handlejwt
+package auth
 
 import (
 	"os"
@@ -9,7 +9,7 @@ func TestGenerateToken(t *testing.T) {
 	os.Setenv("JWT_SECRET", "testsecret") // Set up a test secret
 	jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-	token, err := GenerateToken("testuser")
+	token, err := GenerateAuthToken("testuser")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -23,7 +23,7 @@ func TestParseToken(t *testing.T) {
 	os.Setenv("JWT_SECRET", "testsecret") // Set up a test secret
 	jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-	token, _ := GenerateToken("testuser")
+	token, _ := GenerateAuthToken("testuser")
 
 	claims, err := ParseToken(token)
 	if err != nil {
@@ -39,9 +39,9 @@ func TestRefreshToken(t *testing.T) {
 	os.Setenv("JWT_SECRET", "testsecret") // Set up a test secret
 	jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-	token, _ := GenerateToken("testuser")
+	token, _ := GenerateAuthToken("testuser")
 
-	newToken, err := RefreshToken(token)
+	newToken, err := RefreshAuthToken(token)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
